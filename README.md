@@ -12,5 +12,5 @@ Aplicação construída com **[ Express ] (https://expressjs.com/pt-br/)** .
 - É necessario ter os softwares abaixo instalados em sua máquina:
 - **[NodeJs](https://nodejs.org/en)**.
 - **[Express](https://expressjs.com/pt-br/)**.
-- **[Express-handlebars]([https://nodejs.org/en](https://www.npmjs.com/package/express-handlebars))**. 
+- **[Express-handlebars](https://www.npmjs.com/package/express-handlebars)**. 
 - **[MySQL2](https://www.mysql.com/)**. Banco de Dados Relacional.
