@@ -89,7 +89,7 @@ conexao.connect(function (erro) {
     console.log("Sua conexao foi realizada com sucesso!")
 })
 
-//rota de de cadastro do formulario
+//rota de de cadastro de produtos no formulario
 app.post('/cadastrar', function (req, res) {
     try {
         // Obter os dados que serão utiliados para o cadastro
