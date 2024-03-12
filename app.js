@@ -146,5 +146,61 @@ app.get('/remover/:codigo&:imagem', function (req, res) {
     }
 
 });
+
+
+// Rota para editar produtos
+app.post('/editar', function(req, res){
+
+    // Obter os dados do formulário
+    let nome = req.body.nome;
+    let valor = req.body.valor;
+    let codigo = req.body.codigo;
+    let nomeImagem = req.body.nomeImagem;
+
+    // Validar nome do produto e valor
+    if(nome == '' || valor == '' || isNaN(valor)){
+        res.redirect('/falhaEdicao');
+    }else {
+
+        // Definir o tipo de edição
+        try{
+            // Objeto de imagem
+            let imagem = req.files.imagem;
+
+            // SQL
+            let sql = `UPDATE produto SET nome='${nome}', valor=${valor}, imagem='${imagem.name}' WHERE codigo=${codigo}`;
+   
+            // Executar comando SQL
+            conexao.query(sql, function(erro, retorno){
+                // Caso falhe o comando SQL
+                if(erro) throw erro;
+
+                // Remover imagem antiga
+                fs.unlink(__dirname+'/imagens/'+nomeImagem, (erro_imagem)=>{
+                    console.log('Falha ao remover a imagem.');
+                });
+
+                // Cadastrar nova imagem
+                imagem.mv(__dirname+'/imagens/'+imagem.name);
+            });
+        }catch(erro){
+           
+            // SQL
+            let sql = `UPDATE produto SET nome='${nome}', valor=${valor} WHERE codigo=${codigo}`;
+       
+            // Executar comando SQL
+            conexao.query(sql, function(erro, retorno){
+                // Caso falhe o comando SQL
+                if(erro) throw erro;
+            });
+        }
+
+        // Redirecionamento
+        res.redirect('/okEdicao');
+    }
+});
+
+
+
 // servidor rodando na porta
 app.listen(8080);
