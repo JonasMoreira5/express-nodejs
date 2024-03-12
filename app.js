@@ -1,8 +1,5 @@
-// Importação do Modulo Express
+// Inportação do Modulo Express
 const express = require('express');
-
-// Importando modulo de concexao com o banco de dados
-const conexao = require('./bd/conexao_mysql');
 
 // importar modulo fileupload
 const fileupload = require('express-fileupload');
@@ -10,10 +7,10 @@ const fileupload = require('express-fileupload');
 // Importando express-handlebars
 const { engine } = require('express-handlebars');
 
+// Inportação do Modulo MySQL2
+const mysql = require('mysql2');
 
 const fs = require('fs');
-const { Alert } = require('bootstrap');
-const { dirname } = require('path');
 
 // ------------------------------------------------------------------------------ //
 
@@ -33,7 +30,7 @@ app.use('/css', express.static('./css'));
 app.use('/imagens', express.static('./imagens'));
 
 // configuração do express-handlebars
-// app.engine('handlebars', engine());
+app.engine('handlebars', engine());
 
 // configuração express-handlebars
 app.engine('handlebars', engine({
@@ -44,8 +41,6 @@ app.engine('handlebars', engine({
         }
     }
 }));
-
-// template
 app.set('view engine', 'handlebars');
 app.set('views', './views');
 
@@ -58,6 +53,13 @@ app.get('/', (req, res) => {
     res.render('formulario');
 });
 
+// configuração do Banco de Dados
+const conexao = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '123456',
+    database: 'projeto'
+});
 
 // rota principal
 app.get('/', function (req, res) {
@@ -81,6 +83,11 @@ app.get('/:situacao', function (req, res) {
     });
 });
 
+// Teste de conexão do própio express
+conexao.connect(function (erro) {
+    if (erro) throw erro;
+    console.log("Sua conexao foi realizada com sucesso!")
+})
 
 //rota de de cadastro de produtos no formulario
 app.post('/cadastrar', function (req, res) {
@@ -139,70 +146,5 @@ app.get('/remover/:codigo&:imagem', function (req, res) {
     }
 
 });
-
-// Rota para redirecionar para o formulario de alteração/edição
-app.get('/formularioEditar/:codigo', function(req, res){
-    // SQL
-    let sql = `SELECT * FROM produto WHERE codigo = ${req.params.codigo}`;
-
-    // Executar o comando SQL
-    conexao.query(sql, function (erro, retorno) {
-        // caso falhe o comando SQL
-        if (erro) throw erro;
-
-        // caso consiga executar o comando SQL
-        res.render('formularioEditar', {produto:retorno[0]});
-    });
-});
-
-// rota para editar produtos
-app.post('/editar', function(req, res){
-    // Obter os dados do formulario
-    let nome = req.body.nome;
-    let valor = req.body.valor;
-    let codigo = req.body.codigo;
-    let nomeImagem = req.body.nomeImagem;
-
-    // validar nome do produto e valor
-    if(nome == "|| valor == " || isNaN(valor)){
-        res.redirect('/falhaEdicao');
-    }else {
-        // Definir o tipo de edição
-        try {
-            // objeto de imagem
-            let imagem = req.files.imagem;
-
-            // SQL
-            let sql = `UPDATE produto SET nome='${nome}', valor=${valor}, imagem='${imagem.name}' WHERE codigo=${codigo}`;
-
-            // Executar comando sql
-            conexao.query(sql, function(erro, retorno){
-                // caso falhe o comando sql
-                if(erro) throw erro;
-                
-                // Remover imagem antiga
-                fs.unlink(__dirname +'/imagens/'+nomeImagem, (erro_imagem) => {
-                    console.log('Falha ao remover a imagem');
-                });
-
-                // cadastrar nova imagem
-                imagem.mv(__dirname+'/imagens/'+imagem.name);
-            });
-
-        } catch (erro) {
-            // sql
-            let sql = `UPDATE produto SET nome='${nome}, valor=${valor} WHERE codigo=${codigo}`;
-
-            // Executar comando
-            conexao.query(sql, function(erro, retorno){
-                // caso falhe o comando sql
-                if(erro) throw erro;
-            });
-        }
-        // redirecionamento
-        res.redirect('/okEdicao');
-    }
-});
-
 // servidor rodando na porta
 app.listen(8080);
