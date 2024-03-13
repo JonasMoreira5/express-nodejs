@@ -3,19 +3,30 @@
 <div class="container">
     <div class="row">
         <div class="col-4 offset-3">
+            {{!-- mensagens --}}
+            {{>mensagens}}
             <form action="/cadastrar" method="post" enctype="multipart/form-data">
                 {{!-- passando as informações pleo value para o banco --}}
                 <input type="text" value="" name="nome" class="form-control" placeholder="Nome do produto">
                 <input type="number" value="" name="valor" class="form-control" placeholder="Valor do produto">
+
+
+                {{!-- Menu de categoria --}}
+                <select name="categoria" id="select_cat" class="form-control">
+                    <option value="">Selecione a categoria do produto</option>
+                    <option value="alimenticio">Alimentício</option>
+                    <option value="eletronico">Eletrônico</option>
+                    <option value="vestuario">vestuário</option>
+                </select>
+                
                 <input type="file" value="" name="imagem" class="form-control">
                 <input type="submit" class="btn btn-primary" value="Cadastrar">
             </form>
         </div>
+
     </div>
 </div>
-</main>
 
-<main>
 {{!-- Listagem de produtos --}}
     <div class="container">
         <div class="row">
@@ -36,4 +47,3 @@
         </div>
     </div>
 </main>
-

@@ -11,6 +11,7 @@ const { engine } = require('express-handlebars');
 const mysql = require('mysql2');
 
 const fs = require('fs');
+const { connect } = require('http2');
 
 // ------------------------------------------------------------------------------ //
 
@@ -96,13 +97,14 @@ app.post('/cadastrar', function (req, res) {
         let nome = req.body.nome;
         let valor = req.body.valor;
         let imagem = req.files.imagem.name;
+        let categoria = req.body.categoria;
 
         // Validar o nome do produto e o valor
-        if (nome == '' || valor == '' || isNaN(valor)) {
+        if (nome == '' || valor == '' || isNaN(valor) || categoria == '') {
             res.redirect('/falhaCadastro');
         } else {
             // SQL
-            let sql = `INSERT INTO produto (nome, valor, imagem) VALUES ('${nome}', ${valor}, '${imagem}')`;
+            let sql = `INSERT INTO produto (nome, valor, imagem, categoria) VALUES ('${nome}', ${valor}, '${imagem}', '${categoria}')`;
 
             // Executar comando SQL
             conexao.query(sql, function (erro, retorno) {
@@ -175,6 +177,7 @@ app.post('/editar', function(req, res){
     let valor = req.body.valor;
     let codigo = req.body.codigo;
     let nomeImagem = req.body.nomeImagem;
+    let categoria = req.body.categoria;
 
     // Validar nome do produto e valor
     if(nome == '' || valor == '' || isNaN(valor)){
@@ -187,7 +190,7 @@ app.post('/editar', function(req, res){
             let imagem = req.files.imagem;
 
             // SQL
-            let sql = `UPDATE produto SET nome='${nome}', valor=${valor}, imagem='${imagem.name}' WHERE codigo=${codigo}`;
+            let sql = `UPDATE produto SET nome='${nome}', valor=${valor}, imagem='${imagem.name}', categoria='${categoria}' WHERE codigo=${codigo}`;
    
             // Executar comando SQL
             conexao.query(sql, function(erro, retorno){
@@ -219,7 +222,49 @@ app.post('/editar', function(req, res){
     }
 });
 
+// rota de listagem
+app.get('/listar/:categoria', function(req, res){
+    listagemProdutos(req,res);
+})
 
+// função para exibir a listagem de produtos
+function listagemProdutos(req, res){
+    // obter categoria
+    let categoria= req.params.categoria;
+
+    // sql
+    let sql = ``;
+
+    if(categoria == 'todos'){
+        sql = `SELECT * FROM produto`; // ORDER BY RAND()
+    }
+    else{
+        sql = `SELECT * FROM produto WHERE categoria = '${categoria}'`; // ORDER BY codigo DESC
+    }
+
+    // Executar comando Sql
+    conexao.query(sql, function(erro, retorno){
+        res.render('lista', {produto:retorno});
+    });
+}
+
+// rota para pesquisa
+app.post('/pesquisa', function(req, res){
+    // obter o termo pesquisado
+    let termo = req.body.termo;
+
+    // sql
+    let sql = `SELECT * FROM produto WHERE nome LIKE '%${termo}%'`;
+
+    // executar o comando sql
+    conexao.query(sql, function(erro, retorno){
+        let semRegistros = retorno.length == 0 ? true:false;
+        res.render('lista', {produto:retorno, semRegistros:semRegistros});
+    })
+
+    // serviço
+    // servico.pesquisa(req, res);
+})
 
 // servidor rodando na porta
 app.listen(8080);
